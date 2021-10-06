@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 
 bucket_name = 'imagenet-sample'
 s3_path = 'imagenet-sample-images/'
-model_path = '/var/task/lambda-ensemble/model/mobilenet_v2_saved_model'
+model_path = '/var/task/lambda-ensemble/mobilenet_v2_saved_model'
 
 s3 = boto3.resource('s3')
 
