@@ -1,0 +1,5 @@
+boto3==1.18.51
+Keras==2.1.5
+numpy==1.20.3
+Pillow==8.2.0
+tensorflow==1.15.0
