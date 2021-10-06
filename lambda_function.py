@@ -7,6 +7,7 @@ from tensorflow.keras.models import load_model
 
 bucket_name = 'imagenet-sample'
 model_path = '/var/task/lambda-ensemble/model/mobilenet_v2'
+model = load_model(model_path, compile=True)
 
 s3 = boto3.resource('s3')
 
@@ -49,7 +50,6 @@ def decode_predictions(preds, top=1):
 
 
 def inference_model(batch_imgs):
-    model = load_model(model_path, compile=True)
     result = model.predict(batch_imgs)
 
     result = decode_predictions(result)
