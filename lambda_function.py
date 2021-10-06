@@ -6,7 +6,6 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
 
 bucket_name = 'imagenet-sample'
-s3_path = 'imagenet-sample-images/'
 model_path = '/var/task/lambda-ensemble/mobilenet_v2'
 
 s3 = boto3.resource('s3')
@@ -62,7 +61,6 @@ def inference_model(batch_imgs):
 
 
 def lambda_handler(event, context):
-    event = json.loads(event)
     file_list = event['file_list']
     batch_size = event['batchsize']
 
