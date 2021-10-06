@@ -14,8 +14,8 @@ RUN pip install -r lambda-ensemble/requirements.txt
 
 # move lambdafunc.py
 RUN cp lambda-ensemble/lambda_function.py /var/task/
-RUN cp lambda-ensemble/imagenet_class_index.json /var/task/
 RUN cp lambda-ensemble/mobilenet_v2.pb /var/task/
+RUN cp lambda-ensemble/imagenet_class_index.json /var/task/
 
 
 CMD ["lambda_function.lambda_handler"]
