@@ -13,6 +13,6 @@ RUN git clone https://github.com/manchann/lambda-ensemble.git
 RUN pip install -r lambda-ensemble/requirements.txt
 
 # move lambdafunc.py
-RUN cp profet-docker/lambda_function.py /var/task/
+RUN cp lambda-ensemble/lambda_function.py /var/task/
 
 CMD ["lambda_function.lambda_handler"]
