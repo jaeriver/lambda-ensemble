@@ -9,7 +9,7 @@ import tensorflow.compat.v1.keras as keras
 
 model_type = 'mobilenet_v2'
 
-saved_model_dir = f'model/{model_type}_saved_model'
+saved_model_dir = f'{model_type}.pb'
 
 model = mobilenet_v2.MobileNetV2(weights='imagenet')
 temp = tf.zeros([8, 224, 224, 3])
