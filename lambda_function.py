@@ -6,7 +6,7 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
 
 bucket_name = 'imagenet-sample'
-model_path = '/var/task/lambda-ensemble/mobilenet_v2'
+model_path = '/var/task/lambda-ensemble/model/mobilenet_v2'
 
 s3 = boto3.resource('s3')
 
