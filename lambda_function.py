@@ -7,7 +7,7 @@ from tensorflow.keras.models import load_model
 
 bucket_name = 'imagenet-sample'
 s3_path = 'imagenet-sample-images/'
-model_path = 'mobilenet_v2_saved_model'
+model_path = '/var/task/lambda-ensemble/model/mobilenet_v2_saved_model'
 
 s3 = boto3.resource('s3')
 
@@ -38,7 +38,7 @@ def filenames_to_input(file_list, batchsize):
 
 def decode_predictions(preds, top=1):
     # get imagenet_class_index.json from container directory
-    with open('imagenet_class_index.json') as f:
+    with open('/var/task/lambda-ensemble/imagenet_class_index.json') as f:
         CLASS_INDEX = json.load(f)
     results = []
     for pred in preds:

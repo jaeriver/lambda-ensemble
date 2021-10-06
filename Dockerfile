@@ -1,7 +1,7 @@
-FROM amazon/aws-lambda-python:3.8
+FROM amazon/aws-lambda-python:3.7
 
 # optional : ensure that pip is up to data
-RUN /var/lang/bin/python3.8 -m pip install --upgrade pip
+RUN /var/lang/bin/python3.7 -m pip install --upgrade pip
 
 # install git
 RUN yum install git -y
