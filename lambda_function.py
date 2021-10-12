@@ -54,14 +54,16 @@ def decode_predictions(preds, top=1):
 def inference_model(batch_imgs):
     pred_start = time.time()
     result = model.predict(batch_imgs)
-
-    result = decode_predictions(result)
     pred_time = time.time() - pred_start
+
+    decode_start = time.time()
+    result = decode_predictions(result)
+    decode_time = time.time() - decode_start
     results = []
     for single_result in result:
         single_result = [(img_class, label, str(round(acc * 100, 4)) + '%') for img_class, label, acc in single_result]
         results.append(single_result)
-    return results, pred_time
+    return results, pred_time, decode_time
 
 
 def lambda_handler(event, context):
@@ -70,10 +72,11 @@ def lambda_handler(event, context):
 
     batch_imgs = filenames_to_input(file_list, batch_size)
     total_start = time.time()
-    result, pred_time = inference_model(batch_imgs)
+    result, pred_time, decode_time = inference_model(batch_imgs)
     total_time = time.time() - total_start
     return {
         'result': result,
         'total_time': total_time,
-        'pred_time': pred_time
+        'pred_time': pred_time,
+        'decode_time': decode_time
     }
