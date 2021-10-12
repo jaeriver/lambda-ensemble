@@ -4,12 +4,14 @@ import numpy as np
 from PIL import Image
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
+import time
 
 bucket_name = 'imagenet-sample'
 model_path = '/var/task/lambda-ensemble/model/mobilenet_v2'
 model = load_model(model_path, compile=True)
 
 s3 = boto3.resource('s3')
+
 
 def read_image_from_s3(filename):
     bucket = s3.Bucket(bucket_name)
@@ -50,14 +52,16 @@ def decode_predictions(preds, top=1):
 
 
 def inference_model(batch_imgs):
+    pred_start = time.time()
     result = model.predict(batch_imgs)
 
     result = decode_predictions(result)
+    pred_time = time.time() - pred_start
     results = []
     for single_result in result:
         single_result = [(img_class, label, str(round(acc * 100, 4)) + '%') for img_class, label, acc in single_result]
         results.append(single_result)
-    return results
+    return results, pred_time
 
 
 def lambda_handler(event, context):
@@ -65,9 +69,11 @@ def lambda_handler(event, context):
     batch_size = event['batchsize']
 
     batch_imgs = filenames_to_input(file_list, batch_size)
-    result = inference_model(batch_imgs)
+    total_start = time.time()
+    result, pred_time = inference_model(batch_imgs)
+    total_time = time.time() - total_start
     return {
-        'result': result
+        'result': result,
+        'total_time': total_time,
+        'pred_time': pred_time
     }
-
-
