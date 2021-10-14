@@ -61,8 +61,8 @@ def inference_model(batch_imgs):
     decode_time = time.time() - decode_start
     results = []
     for single_result in result:
-        single_result = [(img_class, label, str(round(acc * 100, 4)) + '%') for img_class, label, acc in single_result]
-        results.append(single_result)
+        single_result = [(img_class, label, round(acc * 100, 4)) for img_class, label, acc in single_result]
+        results += single_result
     return results, pred_time, decode_time
 
 
