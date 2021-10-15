@@ -10,7 +10,7 @@ bucket_name = 'imagenet-sample'
 s3_path = 'imagenet-sample-images/'
 local_path = '/tmp/'
 
-model_path = 'mobilenet_v2_saved_model'
+model_path = 'model/mobilenet_v2'
 
 s3 = boto3.resource('s3')
 
@@ -63,7 +63,7 @@ def decode_predictions(preds, top=1):
 def inference_model(batch_imgs):
     model = load_model(model_path, compile=True)
     result = model.predict(batch_imgs)
-
+    print(result)
     result = decode_predictions(result)
     results = []
     for single_result in result:

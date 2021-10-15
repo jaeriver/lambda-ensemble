@@ -54,6 +54,7 @@ def decode_predictions(preds, top=1):
 def inference_model(batch_imgs):
     pred_start = time.time()
     result = model.predict(batch_imgs)
+
     pred_time = time.time() - pred_start
 
     decode_start = time.time()
