@@ -38,33 +38,14 @@ def filenames_to_input(file_list, batchsize):
     return batch_imgs
 
 
-def decode_predictions(preds, top=1):
-    # get imagenet_class_index.json from container directory
-    with open('/var/task/lambda-ensemble/imagenet_class_index.json') as f:
-        CLASS_INDEX = json.load(f)
-    results = []
-    for pred in preds:
-        top_indices = pred.argsort()[-top:][::-1]
-        result = [tuple(CLASS_INDEX[str(i)]) + (pred[i],) for i in top_indices]
-        result.sort(key=lambda x: x[2], reverse=True)
-        results.append(result)
-    return results
-
-
 def inference_model(batch_imgs):
     pred_start = time.time()
     result = model.predict(batch_imgs)
 
     pred_time = time.time() - pred_start
 
-    decode_start = time.time()
-    result = decode_predictions(result)
-    decode_time = time.time() - decode_start
-    results = []
-    for single_result in result:
-        single_result = [(img_class, label, round(acc * 100, 4)) for img_class, label, acc in single_result]
-        results += single_result
-    return results, pred_time, decode_time
+
+    return result, pred_time
 
 
 def lambda_handler(event, context):
@@ -73,11 +54,10 @@ def lambda_handler(event, context):
 
     batch_imgs = filenames_to_input(file_list, batch_size)
     total_start = time.time()
-    result, pred_time, decode_time = inference_model(batch_imgs)
+    result, pred_time = inference_model(batch_imgs)
     total_time = time.time() - total_start
     return {
         'result': result,
         'total_time': total_time,
         'pred_time': pred_time,
-        'decode_time': decode_time
     }
