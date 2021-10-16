@@ -19,6 +19,7 @@ def lambda_handler(event, context):
     batch_size = len(event[0]["result"])
     result = []
 
+    similarity_list = []
     for single_result in result:
         single_result = [(img_class, label, round(acc * 100, 4)) for img_class, label, acc in single_result]
         results += single_result

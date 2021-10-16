@@ -51,7 +51,7 @@ def inference_model(batch_imgs):
     result = model.predict(batch_imgs)
     pred_time = time.time() - pred_start
 
-    return result, pred_time
+    return json.dumps(result.tolist()), pred_time
 
 
 def lambda_handler(event, context):
