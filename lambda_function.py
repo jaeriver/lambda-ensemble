@@ -41,6 +41,7 @@ def filenames_to_input(file_list, batchsize):
 def inference_model(batch_imgs):
     pred_start = time.time()
     result = model.predict(batch_imgs)
+    result = np.around(result, decimals=8)
     pred_time = time.time() - pred_start
 
     return json.dumps(result.tolist()), pred_time

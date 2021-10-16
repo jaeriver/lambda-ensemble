@@ -49,9 +49,13 @@ def filenames_to_input(file_list, batchsize):
 def inference_model(batch_imgs):
     pred_start = time.time()
     result = model.predict(batch_imgs)
+    print(result)
+    result = np.around(result, decimals=4)
+    result = np.dtype(np.uint8)
+    print(result)
     pred_time = time.time() - pred_start
-
-    return json.dumps(result.tolist()), pred_time
+    result = json.dumps(result.tolist())
+    return result, pred_time
 
 
 def lambda_handler(event, context):
@@ -62,6 +66,7 @@ def lambda_handler(event, context):
     total_start = time.time()
     result, pred_time = inference_model(batch_imgs)
     total_time = time.time() - total_start
+
     return {
         'result': result,
         'total_time': total_time,
@@ -75,4 +80,4 @@ bucket = s3.Bucket(bucket_name)
 filenames = [file.key for file in bucket.objects.all() if 'JPEG' in file.key]
 event = {'file_list': filenames, 'batchsize': batchsize}
 context = 0
-print(lambda_handler(event, context))
+lambda_handler(event, context)
