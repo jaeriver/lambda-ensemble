@@ -49,12 +49,10 @@ def filenames_to_input(file_list, batchsize):
 def inference_model(batch_imgs):
     pred_start = time.time()
     result = model.predict(batch_imgs)
-    print(result)
-    result = np.around(result, decimals=4)
-    result = np.dtype(np.uint8)
-    print(result)
+    result = np.round(result.astype(np.float64), 8)
+    result = result.tolist()
     pred_time = time.time() - pred_start
-    result = json.dumps(result.tolist())
+    result = json.dumps(result)
     return result, pred_time
 
 
