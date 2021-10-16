@@ -41,9 +41,7 @@ def filenames_to_input(file_list, batchsize):
 def inference_model(batch_imgs):
     pred_start = time.time()
     result = model.predict(batch_imgs)
-
     pred_time = time.time() - pred_start
-
 
     return result, pred_time
 
