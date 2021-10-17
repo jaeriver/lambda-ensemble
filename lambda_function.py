@@ -43,7 +43,7 @@ def inference_model(batch_imgs):
     result = model.predict(batch_imgs)
     pred_time = time.time() - pred_start
 
-    result = np.round(result.astype(np.float64), 8)
+    result = np.round(result.astype(np.float64), 4)
     result = result.tolist()
     result = json.dumps(result)
 
