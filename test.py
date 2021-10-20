@@ -5,6 +5,7 @@ from PIL import Image
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
 import time
+from decimal import Decimal
 
 bucket_name = 'imagenet-sample'
 
@@ -29,7 +30,7 @@ def upload_dynamodb(acc):
     response = table.put_item(
         Item={
             'model_name': 'mobilenet_v2',
-            'case_num': time.time(),
+            'case_num': str(time.time()),
             'test': acc
         }
     )
