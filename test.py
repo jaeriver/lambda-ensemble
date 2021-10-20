@@ -81,7 +81,7 @@ def lambda_handler(event, context):
     batch_imgs = filenames_to_input(file_list, batch_size)
     total_start = time.time()
     result, pred_time = inference_model(batch_imgs)
-    upload_dynamodb(result)
+    # upload_dynamodb(result)
     total_time = time.time() - total_start
 
     return {
