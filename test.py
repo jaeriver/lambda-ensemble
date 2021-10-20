@@ -17,21 +17,21 @@ s3 = boto3.resource('s3')
 #     s3.download_file(bucket_name, object_path, file_path)
 
 
-# table_name = 'lambda-ensemble'
-# region_name = 'us-west-2'
-# dynamodb = boto3.resource('dynamodb', region_name=region_name)
-# table = dynamodb.Table(table_name)
+table_name = 'lambda-ensemble'
+region_name = 'us-west-2'
+dynamodb = boto3.resource('dynamodb', region_name=region_name)
+table = dynamodb.Table(table_name)
 
 
-# def upload_dynamodb(acc):
-#     response = table.put_item(
-#         Item={
-#             'model_name': 'mobilenet_v2',
-#             'case_num': str(time.time()),
-#             'test': acc
-#         }
-#     )
-#     return response
+def upload_dynamodb(acc):
+    response = table.put_item(
+        Item={
+            'model_name': 'mobilenet_v2',
+            'case_num': str(time.time()),
+            'test': acc
+        }
+    )
+    return response
 
 def read_image_from_s3(filename):
     bucket = s3.Bucket(bucket_name)
@@ -77,7 +77,9 @@ def lambda_handler(event, context):
     batch_imgs = filenames_to_input(file_list, batch_size)
     total_start = time.time()
     result, pred_time = inference_model(batch_imgs)
+    upload_dynamodb(result)
     total_time = time.time() - total_start
+
     return {
         'result': result,
         'total_time': total_time,
@@ -90,4 +92,4 @@ bucket = s3.Bucket(bucket_name)
 filenames = [file.key for file in bucket.objects.all() if 'JPEG' in file.key]
 event = {'file_list': filenames, 'batchsize': batchsize}
 context = 0
-lambda_handler(event, context)
+print(lambda_handler(event, context))
