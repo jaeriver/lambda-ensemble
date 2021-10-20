@@ -18,6 +18,23 @@ model = load_model(model_path, compile=True)
 #     s3 = boto3.client('s3')
 #     s3.download_file(bucket_name, object_path, file_path)
 
+
+table_name = 'lambda-ensemble'
+region_name = 'us-west-2'
+dynamodb = boto3.resource('dynamodb', region_name=region_name)
+table = dynamodb.Table(table_name)
+
+
+def upload_dynamodb(acc):
+    response = table.put_item(
+        Item={
+            'model_name': 'mobilenet_v2',
+            'case_num': time.time(),
+            'test': acc
+        }
+    )
+    return response
+
 def read_image_from_s3(filename):
     bucket = s3.Bucket(bucket_name)
     object = bucket.Object(filename)
@@ -63,6 +80,7 @@ def lambda_handler(event, context):
     batch_imgs = filenames_to_input(file_list, batch_size)
     total_start = time.time()
     result, pred_time = inference_model(batch_imgs)
+    upload_dynamodb(result)
     total_time = time.time() - total_start
 
     return {
