@@ -5,10 +5,10 @@ from PIL import Image
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.models import load_model
 import time
-from decimal import Decimal
 
 bucket_name = 'imagenet-sample'
-model_path = 'model/mobilenet_v2'
+model_name = 'mobilenet_v2'
+model_path = 'model/' + model_name
 model = load_model(model_path, compile=True)
 
 s3 = boto3.resource('s3')
@@ -24,18 +24,22 @@ table = dynamodb.Table(table_name)
 
 
 def upload_dynamodb(case_num, acc):
-    item = {}
-    item['model_name'] = 'mobilenet_v2'
-    item['case_num'] = case_num,
+    print(type(acc))
+    print(acc[0])
+    print(len(acc[0]))
+    items = []
+    for idx in range(len(acc)):
+        item_dict = dict([(str(i), str(acc[idx][i])) for i in range(len(acc[idx]))])
+        item_dict['model_name'] = model_name + '_' + case_num
+        item_dict['img_num'] = str(idx)
+        items.append(item_dict)
+    print(items)
 
-    response = table.put_item(
-        Item={
-            'model_name': 'mobilenet_v2',
-            'case_num': str(time.time()),
-            'test': acc
-        }
-    )
-    return response
+    with table.batch_writer() as batch:
+        for r in items:
+            print(r)
+            batch.put_item(Item=r)
+    return True
 
 
 def read_image_from_s3(filename):
@@ -70,7 +74,6 @@ def inference_model(batch_imgs):
 
     # result = np.round(result.astype(np.float64), 4)
     result = result.tolist()
-    result = json.dumps(result)
 
     return result, pred_time
 
@@ -96,6 +99,6 @@ def lambda_handler(event, context):
 batchsize = 3
 bucket = s3.Bucket(bucket_name)
 filenames = [file.key for file in bucket.objects.all() if 'JPEG' in file.key]
-event = {'file_list': filenames, 'batchsize': batchsize}
+event = {'file_list': filenames, 'batchsize': batchsize, 'case_num': str(time.time())}
 context = 0
-print(lambda_handler(event, context))
+lambda_handler(event, context)
