@@ -23,7 +23,11 @@ dynamodb = boto3.resource('dynamodb', region_name=region_name)
 table = dynamodb.Table(table_name)
 
 
-def upload_dynamodb(acc):
+def upload_dynamodb(case_num, acc):
+    item = {}
+    item['model_name'] = 'mobilenet_v2'
+    item['case_num'] = case_num,
+
     response = table.put_item(
         Item={
             'model_name': 'mobilenet_v2',
@@ -32,6 +36,7 @@ def upload_dynamodb(acc):
         }
     )
     return response
+
 
 def read_image_from_s3(filename):
     bucket = s3.Bucket(bucket_name)
@@ -63,7 +68,7 @@ def inference_model(batch_imgs):
     result = model.predict(batch_imgs)
     pred_time = time.time() - pred_start
 
-    result = np.round(result.astype(np.float64), 4)
+    # result = np.round(result.astype(np.float64), 4)
     result = result.tolist()
     result = json.dumps(result)
 
@@ -73,11 +78,12 @@ def inference_model(batch_imgs):
 def lambda_handler(event, context):
     file_list = event['file_list']
     batch_size = event['batchsize']
-
+    case_num = event['case_num']
     batch_imgs = filenames_to_input(file_list, batch_size)
+
     total_start = time.time()
     result, pred_time = inference_model(batch_imgs)
-    upload_dynamodb(result)
+    upload_dynamodb(case_num, result)
     total_time = time.time() - total_start
 
     return {
