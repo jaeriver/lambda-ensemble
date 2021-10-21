@@ -29,7 +29,6 @@ def upload_dynamodb(case_num, acc):
         item_dict['model_name'] = model_name + '_' + case_num
         item_dict['img_num'] = str(idx)
         items.append(item_dict)
-    print(items)
 
     with table.batch_writer() as batch:
         for r in items:
