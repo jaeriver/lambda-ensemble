@@ -20,9 +20,6 @@ table = dynamodb.Table(table_name)
 
 
 def upload_dynamodb(case_num, acc):
-    print(type(acc))
-    print(acc[0])
-    print(len(acc[0]))
     items = []
     for idx in range(len(acc)):
         item_dict = dict([(str(i), str(acc[idx][i])) for i in range(len(acc[idx]))])
@@ -32,7 +29,6 @@ def upload_dynamodb(case_num, acc):
 
     with table.batch_writer() as batch:
         for r in items:
-            print(r)
             batch.put_item(Item=r)
     return True
 
