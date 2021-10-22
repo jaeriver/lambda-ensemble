@@ -1,20 +1,24 @@
 import json
 import boto3
 import numpy as np
+import ast
 
-table_name = 'lambda-ensemble'
+table_name = 'lambda-ensemble1'
 region_name = 'us-west-2'
 dynamodb = boto3.resource('dynamodb', region_name=region_name)
 table = dynamodb.Table(table_name)
 
 
 def get_dynamodb(data):
-    count = 0
     response = []
     for d in data:
-        response = table.get_item(Key={'model_name': d['model_name'], 'case_num': d['case_num']})
-        response.append(response)
-        print(response)
+        res = table.get_item(Key={"model_name": d['model_name'], "case_num": d['case_num']})
+        res = res['Item']
+        res.pop('model_name')
+        res.pop('case_num')
+        res = list(res.values())
+        res = [ast.literal_eval(val) for val in res]
+        response.append(res)
     response = np.array(response)
     response = response.astype(np.float)
     response = response.sum(axis=0)
@@ -36,28 +40,14 @@ def decode_predictions(preds, top=1):
 
 
 def lambda_handler(event, context):
-    model_num = len(event)
-    batch_size = len(event[0]["batch_size"])
-
+    results = []
     result = get_dynamodb(event)
-
-    return True
-    similarity_list = []
+    result = decode_predictions(result)
     for single_result in result:
         single_result = [(img_class, label, round(acc * 100, 4)) for img_class, label, acc in single_result]
         results += single_result
-    for img_idx in range(batch_size):
-        acc = 0
-        for model_idx in range(model_num):
-            acc += event[model_idx]["result"][img_idx][2]
-        acc /= model_num
-        res = []
-        res.append(event[0]["result"][img_idx][0])
-        res.append(event[0]["result"][img_idx][1])
-        res.append(acc)
 
-        result.append(res)
-
+    print(results)
     return {
-        'result': result
+        'results': results
     }
