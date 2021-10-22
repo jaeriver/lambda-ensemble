@@ -5,7 +5,7 @@ import time
 BUCKET_NAME = 'imagenet-sample'
 
 s3 = boto3.resource('s3')
-batchsize = 32
+batch_size = 32
 
 
 def lambda_handler(event, context):
@@ -14,6 +14,6 @@ def lambda_handler(event, context):
 
     return {
         'file_list': filenames,
-        'batchsize': batchsize,
+        'batch_size': batch_size,
         'case_num': str(time.time())
     }

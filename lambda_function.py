@@ -67,7 +67,7 @@ def inference_model(batch_imgs):
 
 def lambda_handler(event, context):
     file_list = event['file_list']
-    batch_size = event['batchsize']
+    batch_size = event['batch_size']
     case_num = event['case_num']
     batch_imgs = filenames_to_input(file_list, batch_size)
 
