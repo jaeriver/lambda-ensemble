@@ -20,16 +20,12 @@ table = dynamodb.Table(table_name)
 
 
 def upload_dynamodb(case_num, acc):
-    items = []
-    for idx in range(len(acc)):
-        item_dict = dict([(str(i), str(acc[idx][i])) for i in range(len(acc[idx]))])
-        item_dict['model_name'] = model_name + '_' + case_num
-        item_dict['img_num'] = str(idx)
-        items.append(item_dict)
+    item_dict = dict([(str(i), str(acc[i])) for i in range(len(acc))])
+    item_dict['model_name'] = model_name
+    item_dict['case_num'] = case_num
 
     with table.batch_writer() as batch:
-        for r in items:
-            batch.put_item(Item=r)
+        batch.put_item(Item=item_dict)
     return True
 
 
@@ -81,6 +77,8 @@ def lambda_handler(event, context):
     total_time = time.time() - total_start
 
     return {
+        'model_name': model_name,
+        'case_num': case_num,
         'batch_size': batch_size,
         'total_time': total_time,
         'pred_time': pred_time,

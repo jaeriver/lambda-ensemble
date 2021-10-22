@@ -1,8 +1,9 @@
 import json
 import boto3
 import numpy as np
+import time
 
-table_name = 'lambda-ensemble'
+table_name = 'lambda-ensemble1'
 region_name = 'us-west-2'
 dynamodb = boto3.resource('dynamodb', region_name=region_name)
 table = dynamodb.Table(table_name)
@@ -11,9 +12,10 @@ table = dynamodb.Table(table_name)
 def get_dynamodb(data):
     count = 0
     response = []
+    print(data)
     for d in data:
-        response = table.get_item(Key={'model_name': d['model_name'], 'case_num': d['case_num']})
-        response.append(response)
+        res = table.get_item(Key={"model_name": d['model_name'], "case_num": d['case_num']})
+        response.append(list(res['Item'].values()))
         print(response)
     response = np.array(response)
     response = response.astype(np.float)
@@ -61,3 +63,15 @@ def lambda_handler(event, context):
     return {
         'result': result
     }
+
+
+event = [{
+    'model_name': "mobilenet_v2",
+    'case_num': "1634866998.909735",
+    'batch_size': '3',
+    'total_time': 1,
+    'pred_time': 1,
+}]
+
+context = 0
+lambda_handler(event, context)
