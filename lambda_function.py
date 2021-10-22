@@ -13,7 +13,7 @@ model = load_model(model_path, compile=True)
 
 s3 = boto3.resource('s3')
 
-table_name = 'lambda-ensemble'
+table_name = 'lambda-ensemble1'
 region_name = 'us-west-2'
 dynamodb = boto3.resource('dynamodb', region_name=region_name)
 table = dynamodb.Table(table_name)
