@@ -47,7 +47,6 @@ def lambda_handler(event, context):
         single_result = [(img_class, label, round(acc * 100, 4)) for img_class, label, acc in single_result]
         results += single_result
 
-    print(results)
     return {
         'results': results
     }
