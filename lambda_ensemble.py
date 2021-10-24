@@ -1,12 +1,33 @@
 import json
 import boto3
 import numpy as np
+import time
 import ast
 
 table_name = 'lambda-ensemble1'
+bucket_ensemble = 'lambda-ensemble'
+s3 = boto3.resource('s3')
 region_name = 'us-west-2'
 dynamodb = boto3.resource('dynamodb', region_name=region_name)
 table = dynamodb.Table(table_name)
+
+
+def get_s3(data):
+    bucket = s3.Bucket(bucket_ensemble)
+    response = []
+    for d in data:
+        filename = d['model_name'] + '_' + d['case_num'] + '.txt'
+        object = bucket.Object(filename)
+        res = object.get()
+        res = json.load(res['Body'])
+        res = list(res.values())
+        res = [ast.literal_eval(val) for val in res]
+        response.append(res)
+    response = np.array(response)
+    response = response.astype(np.float)
+    response = response.sum(axis=0)
+    response = response / len(data)
+    return response
 
 
 def get_dynamodb(data):
@@ -28,7 +49,7 @@ def get_dynamodb(data):
 
 def decode_predictions(preds, top=1):
     # get imagenet_class_index.json from container directory
-    with open('/var/task/lambda-ensemble/imagenet_class_index.json') as f:
+    with open('imagenet_class_index.json') as f:
         CLASS_INDEX = json.load(f)
     results = []
     for pred in preds:
@@ -41,12 +62,16 @@ def decode_predictions(preds, top=1):
 
 def lambda_handler(event, context):
     results = []
-    result = get_dynamodb(event)
+    get_start = time.time()
+    result = get_s3(event)
+    get_time = time.time() - get_start
     result = decode_predictions(result)
     for single_result in result:
         single_result = [(img_class, label, round(acc * 100, 4)) for img_class, label, acc in single_result]
         results += single_result
 
     return {
-        'results': results
+        'result': results,
+        'get_time': get_time,
+        'total_time': time.time() - get_start
     }

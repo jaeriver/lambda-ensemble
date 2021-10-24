@@ -7,15 +7,13 @@ from tensorflow.keras.models import load_model
 import time
 
 bucket_name = 'imagenet-sample'
+bucket_ensemble = 'lambda-ensemble'
 model_name = 'mobilenet_v2'
 model_path = 'model/' + model_name
 model = load_model(model_path, compile=True)
 
 s3 = boto3.resource('s3')
-# def download_image(object_path, file_path):
-#     s3 = boto3.client('s3')
-#     s3.download_file(bucket_name, object_path, file_path)
-
+s3_client = boto3.client('s3')
 
 table_name = 'lambda-ensemble1'
 region_name = 'us-west-2'
@@ -23,14 +21,23 @@ dynamodb = boto3.resource('dynamodb', region_name=region_name)
 table = dynamodb.Table(table_name)
 
 
+def upload_s3(case_num, acc):
+    item_dict = dict([(str(i), str(acc[i])) for i in range(len(acc))])
+    s3_client.put_object(
+        Body=json.dumps(item_dict),
+        Bucket=bucket_ensemble,
+        Key=model_name + '_' + case_num + '.txt'
+    )
+    return True
+
+
 def upload_dynamodb(case_num, acc):
     item_dict = dict([(str(i), str(acc[i])) for i in range(len(acc))])
     item_dict['model_name'] = model_name
     item_dict['case_num'] = case_num
-    print(item_dict)
-    table.put_item(Item=item_dict)
-    # with table.batch_writer() as batch:
-    #     batch.put_item(Item=item_dict)
+
+    with table.batch_writer() as batch:
+        batch.put_item(Item=item_dict)
     return True
 
 
@@ -72,13 +79,13 @@ def inference_model(batch_imgs):
 
 def lambda_handler(event, context):
     file_list = event['file_list']
-    batch_size = event['batchsize']
+    batch_size = event['batch_size']
     case_num = event['case_num']
     batch_imgs = filenames_to_input(file_list, batch_size)
 
     total_start = time.time()
     result, pred_time = inference_model(batch_imgs)
-    upload_dynamodb(case_num, result)
+    upload_s3(case_num, result)
     total_time = time.time() - total_start
 
     return {
@@ -89,9 +96,10 @@ def lambda_handler(event, context):
         'pred_time': pred_time,
     }
 
-batchsize = 3
+
+batch_size = 3
 bucket = s3.Bucket(bucket_name)
 filenames = [file.key for file in bucket.objects.all() if 'JPEG' in file.key]
-event = {'file_list': filenames, 'batchsize': batchsize, 'case_num': str(time.time())}
+event = {'file_list': filenames, 'batch_size': batch_size, 'case_num': str(time.time())}
 context = 0
 lambda_handler(event, context)
