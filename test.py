@@ -47,16 +47,19 @@ def read_image_from_s3(filename):
     response = object.get()
     file_stream = response['Body']
     img = Image.open(file_stream)
+    img.convert('RGB')
     return img
 
 
-def filenames_to_input(file_list, batchsize):
+def filenames_to_input(file_list):
     imgs = []
-    for i in range(batchsize):
-        img = read_image_from_s3(file_list[i])
+    for file in file_list:
+        img = read_image_from_s3(file)
         img = img.resize((224, 224), Image.ANTIALIAS)
         img = np.array(img)
-
+        # if image is grayscale, convert to 3 channels
+        if len(img.shape) != 3:
+            img = np.repeat(img[..., np.newaxis], 3, -1)
         # batchsize, 224, 224, 3
         img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
         img = preprocess_input(img)
@@ -81,7 +84,7 @@ def lambda_handler(event, context):
     file_list = event['file_list']
     batch_size = event['batch_size']
     case_num = event['case_num']
-    batch_imgs = filenames_to_input(file_list, batch_size)
+    batch_imgs = filenames_to_input(file_list)
 
     total_start = time.time()
     result, pred_time = inference_model(batch_imgs)
@@ -97,9 +100,10 @@ def lambda_handler(event, context):
     }
 
 
-batch_size = 3
+batch_size = [50,500]
 bucket = s3.Bucket(bucket_name)
 filenames = [file.key for file in bucket.objects.all() if 'JPEG' in file.key]
+filenames = filenames[batch_size[0]:batch_size[1]]
 event = {'file_list': filenames, 'batch_size': batch_size, 'case_num': str(time.time())}
 context = 0
 lambda_handler(event, context)
